@@ -48,11 +48,11 @@ export function decryptMessage(encryptedData: Buffer, password: string): string 
  * Encodes message into image using LSB steganography
  */
 export async function encodeMessage(
-  imagePath: string,
+  imageData: string | Buffer,
   message: string,
   password: string
 ): Promise<Buffer> {
-  const image = sharp(imagePath);
+  const image = sharp(imageData);
   const metadata = await image.metadata();
 
   if (!metadata.width || !metadata.height) {
@@ -114,10 +114,10 @@ export async function encodeMessage(
  * Decodes message from image
  */
 export async function decodeMessage(
-  imagePath: string,
+  imageData: string | Buffer,
   password: string
 ): Promise<string> {
-  const image = sharp(imagePath);
+  const image = sharp(imageData);
   const metadata = await image.metadata();
 
   if (!metadata.width || !metadata.height || !metadata.channels) {
@@ -175,8 +175,8 @@ export async function decodeMessage(
 /**
  * Calculate capacity of image
  */
-export async function calculateCapacity(imagePath: string): Promise<number> {
-  const image = sharp(imagePath);
+export async function calculateCapacity(imageData: string | Buffer): Promise<number> {
+  const image = sharp(imageData);
   const metadata = await image.metadata();
 
   if (!metadata.width || !metadata.height || !metadata.channels) {

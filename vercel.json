@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "buildCommand": "npm install && npm run build:backend && npm run build:frontend",
+  "outputDirectory": "frontend/dist",
+  "env": {
+    "VITE_API_URL": "/api"
+  },
+  "functions": {
+    "api/**": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
