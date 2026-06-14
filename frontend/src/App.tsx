@@ -4,6 +4,7 @@ import { Toaster } from './components/ui/Toaster';
 import { EncodeTab } from './components/EncodeTab';
 import { DecodeTab } from './components/DecodeTab';
 import { HelpTab } from './components/HelpTab';
+import { SpiderCursor } from './components/SpiderCursor';
 
 type Tab = 'encode' | 'decode' | 'help';
 
@@ -12,6 +13,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-dark-bg">
+      <SpiderCursor />
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
           {/* Header */}
@@ -33,7 +35,7 @@ export default function App() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 min-w-24 py-3 px-6 rounded-lg font-semibold transition-all ${activeTab === tab
-                  ? 'bg-accent-orange text-white shadow-lg'
+                  ? 'bg-accent-orange text-dark-bg font-bold shadow-lg'
                   : 'bg-dark-card border border-dark-border text-text-muted hover:border-accent-orange/50'
                   }`}
               >
@@ -52,7 +54,7 @@ export default function App() {
           {/* Footer */}
           <div className="text-center mt-12 text-text-muted text-sm">
             <p>
-              🔒 All encryption happens securely in your browser. Your data is never stored or transmitted.
+              All encryption happens securely in your browser. Your data is never stored or transmitted. Coded by <span className="text-accent-orange">Vishal</span>
             </p>
           </div>
         </div>

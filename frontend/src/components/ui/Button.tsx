@@ -13,7 +13,7 @@ export const Button = React.forwardRef<
 
   const variants = {
     default:
-      'bg-accent-orange text-white hover:bg-accent-orange-hover active:bg-accent-orange-dark shadow-lg hover:shadow-xl',
+      'bg-accent-orange text-dark-bg font-bold hover:bg-accent-orange-hover active:bg-accent-orange-dark shadow-lg hover:shadow-xl',
     outline:
       'border-2 border-dark-border bg-dark-card hover:bg-dark-input text-text-dark',
     ghost: 'hover:bg-dark-input text-text-dark',
