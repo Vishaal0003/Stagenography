@@ -5,6 +5,10 @@ interface Point {
   y: number;
   len: number;
   r: number;
+  baseX: number;
+  baseY: number;
+  floatSpeedX: number;
+  floatSpeedY: number;
 }
 
 export function SpiderCursor() {
@@ -33,11 +37,17 @@ export function SpiderCursor() {
 
     // Spawn 250 background stars
     const pts = many(250, () => {
+      const baseX = rnd(window.innerWidth);
+      const baseY = rnd(window.innerHeight);
       return {
-        x: rnd(window.innerWidth),
-        y: rnd(window.innerHeight),
+        x: baseX,
+        y: baseY,
+        baseX,
+        baseY,
         len: 0.15, // start at ambient
         r: 1.0,
+        floatSpeedX: rnd(0.002, 0.0005),
+        floatSpeedY: rnd(0.002, 0.0005),
       };
     });
 
@@ -45,6 +55,7 @@ export function SpiderCursor() {
     let ty = window.innerHeight / 2;
     let x = tx;
     let y = ty;
+    let time = 0;
 
     const handlePointerMove = (e: PointerEvent) => {
       tx = e.clientX;
@@ -73,11 +84,18 @@ export function SpiderCursor() {
       if (!ctx) return;
       ctx.clearRect(0, 0, w, h);
 
+      // Increment time for floating animation
+      time += 0.01;
+
       // Smooth lag behind mouse coordinates for the light focus point
       x += (tx - x) / 10;
       y += (ty - y) / 10;
 
       pts.forEach((ptObj) => {
+        // Apply floating motion using sine and cosine
+        ptObj.x = ptObj.baseX + Math.sin(time * ptObj.floatSpeedX) * 30;
+        ptObj.y = ptObj.baseY + Math.cos(time * ptObj.floatSpeedY) * 30;
+
         const dx = ptObj.x - x;
         const dy = ptObj.y - y;
         const len = hypot(dx, dy);
