@@ -17,11 +17,8 @@ export default function App() {
           {/* Header */}
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-3 bg-accent-orange rounded-lg">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-text-dark">
-                Steganography
+              <h1 className="text-4xl md:text-5xl text-text-dark" style={{ fontFamily: 'Arial', fontWeight: 'bold' }}>
+                Stagenography
               </h1>
             </div>
             <p className="text-lg text-text-muted">
@@ -35,11 +32,10 @@ export default function App() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 min-w-24 py-3 px-6 rounded-lg font-semibold transition-all ${
-                  activeTab === tab
-                    ? 'bg-accent-orange text-white shadow-lg'
-                    : 'bg-dark-card border border-dark-border text-text-muted hover:border-accent-orange/50'
-                }`}
+                className={`flex-1 min-w-24 py-3 px-6 rounded-lg font-semibold transition-all ${activeTab === tab
+                  ? 'bg-accent-orange text-white shadow-lg'
+                  : 'bg-dark-card border border-dark-border text-text-muted hover:border-accent-orange/50'
+                  }`}
               >
                 {tab === 'encode' ? 'Encode' : tab === 'decode' ? 'Decode' : 'Help'}
               </button>

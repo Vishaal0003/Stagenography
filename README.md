@@ -1,6 +1,6 @@
 # Image Steganography Web Application
 
-A modern web application for encoding and decoding secret messages within images using AES-256 encryption and LSB (Least Significant Bit) steganography.
+A modern, **100% client-side** web application for encoding and decoding secret messages within images. All processing is done securely in your browser using the native Web Crypto API and HTML5 Canvas API—no backend or server storage required!
 
 ## Features
 
@@ -9,7 +9,8 @@ A modern web application for encoding and decoding secret messages within images
 - Hide encrypted messages inside images
 - Password-protected encryption
 - Visual capacity indicator
-- Real-time upload progress
+- Real-time processing
+- Zero server interaction—100% private
 
 🔍 **Decode Tab:**
 - Extract hidden messages from encoded images
@@ -18,10 +19,10 @@ A modern web application for encoding and decoding secret messages within images
 - Support for PNG images
 
 🔐 **Security:**
-- AES-256-CBC encryption
-- PBKDF2 key derivation (100,000 iterations)
+- AES-256-CBC encryption (via Web Crypto API)
+- PBKDF2 key derivation (100,000 iterations, SHA-256)
 - Password-based security
-- Client-to-server HTTPS ready
+- **No data leaves your device:** All encryption and steganography happen directly in the browser's memory.
 
 🎨 **UI/UX:**
 - Modern gradient background
@@ -29,28 +30,20 @@ A modern web application for encoding and decoding secret messages within images
 - Drag & drop file upload
 - Responsive design (mobile + desktop)
 - Toast notifications
-- Loading states with progress bars
 
 ## Tech Stack
 
-### Frontend
 - **React 18** with TypeScript
-- **Vite** for fast development
+- **Vite** for fast development and building
 - **Tailwind CSS** for styling
 - **Shadcn/ui** inspired components
 - **Lucide React** for icons
-- **Axios** for API calls
-
-### Backend
-- **Node.js** with Express
-- **TypeScript** for type safety
-- **Sharp** for image processing
-- **Multer** for file uploads
-- **Crypto** (Node.js built-in) for encryption
+- **Web Crypto API** for native, secure encryption
+- **HTML5 Canvas API** for raw pixel manipulation (LSB Steganography)
 
 ## Project Structure
 
-```
+```text
 Steganography/
 ├── frontend/                 # React + TypeScript app
 │   ├── src/
@@ -59,7 +52,7 @@ Steganography/
 │   │   │   ├── EncodeTab.tsx
 │   │   │   ├── DecodeTab.tsx
 │   │   │   └── App.tsx
-│   │   ├── utils/          # Utilities and API calls
+│   │   ├── utils/          # Utilities (Crypto & Canvas logic in api.ts)
 │   │   ├── main.tsx        # Entry point
 │   │   └── index.css       # Tailwind styles
 │   ├── index.html
@@ -67,162 +60,63 @@ Steganography/
 │   ├── tsconfig.json
 │   ├── tailwind.config.ts
 │   └── package.json
-│
-└── backend/                  # Express + TypeScript API
-    ├── src/
-    │   ├── index.ts        # Express server
-    │   └── steganography.ts # Core LSB + encryption logic
-    ├── dist/               # Compiled output
-    ├── tsconfig.json
-    ├── .env
-    └── package.json
+└── package.json              # Root package config
 ```
 
-## Installation
+## Installation & Running
+
+Since there's no backend, setup is incredibly simple.
 
 ### Prerequisites
-- Node.js 16+ and npm
+- Node.js 18+ and npm
 
-### Backend Setup
+### Quick Start
 
+1. Install all dependencies from the root directory:
 ```bash
-cd backend
-npm install
+npm run install-all
 ```
 
-Create a `.env` file in the backend folder (already included):
-```
-PORT=5000
-NODE_ENV=development
-MAX_FILE_SIZE=10485760
-```
-
-### Frontend Setup
-
+2. Start the development server:
 ```bash
-cd frontend
-npm install
-```
-
-## Running the Application
-
-### Start Backend (Terminal 1)
-
-```bash
-cd backend
 npm run dev
 ```
 
-The API will run on `http://localhost:5000`
-
-### Start Frontend (Terminal 2)
-
-```bash
-cd frontend
-npm run dev
-```
-
-Open `http://localhost:3000` in your browser
-
-## API Endpoints
-
-### POST `/api/encode`
-Encodes a message into an image
-
-**Request:**
-- `Content-Type: multipart/form-data`
-- `image`: PNG or JPG file
-- `message`: Text message to encode
-- `password`: Encryption password (min 6 chars)
-
-**Response:**
-- Returns encoded PNG image as binary
-
-### POST `/api/decode`
-Decodes a message from an image
-
-**Request:**
-- `Content-Type: multipart/form-data`
-- `image`: PNG image (previously encoded)
-- `password`: Decryption password
-
-**Response:**
-```json
-{
-  "message": "Your secret message",
-  "success": true
-}
-```
-
-### POST `/api/capacity`
-Calculates how much data can be hidden in an image
-
-**Request:**
-- `Content-Type: multipart/form-data`
-- `image`: PNG or JPG file
-
-**Response:**
-```json
-{
-  "capacity": 50000,
-  "capacityKB": 48.83
-}
-```
-
-### GET `/api/health`
-Health check endpoint
-
-**Response:**
-```json
-{ "status": "ok" }
-```
+3. Open `http://localhost:5173` (or the port Vite provides) in your browser.
 
 ## How It Works
 
 ### Encoding Process
-
-1. **Message Encryption:** The secret message is encrypted using AES-256-CBC with PBKDF2 key derivation
-2. **LSB Embedding:** Encrypted bytes are embedded into the least significant bits of image pixels
-3. **Image Export:** Modified image is saved as PNG
+1. **Message Encryption:** The secret message is encrypted using AES-CBC with PBKDF2 key derivation via the browser's native `crypto.subtle` API.
+2. **Canvas Loading:** The uploaded image is drawn onto an invisible HTML5 `<canvas>` element to extract the raw `ImageData` (RGBA pixel array).
+3. **LSB Embedding:** The encrypted byte array (along with a 4-byte length header) is embedded bit-by-bit into the Least Significant Bits (LSB) of the image's pixel data.
+4. **Image Export:** The modified `ImageData` is put back onto the canvas and exported as a new PNG blob for the user to download.
 
 ### Decoding Process
-
-1. **LSB Extraction:** Extract bits from image pixels
-2. **Message Decryption:** Decrypt extracted bytes using provided password
-3. **Message Display:** Show decrypted message to user
-
-## Security Notes
-
-- **AES-256-CBC:** Military-grade encryption algorithm
-- **PBKDF2:** 100,000 iterations for strong key derivation
-- **LSB Steganography:** Visually imperceptible, mathematically secure for small payloads
-- **No Server Storage:** Files are processed and immediately deleted
-- **HTTPS Ready:** Can be deployed with SSL/TLS
+1. **Canvas Loading:** The encoded PNG image is drawn onto a `<canvas>` to read the `ImageData`.
+2. **LSB Extraction:** The hidden bits are extracted from the pixel data to reconstruct the encrypted byte array.
+3. **Message Decryption:** The payload is decrypted using the provided password via the Web Crypto API.
+4. **Message Display:** The plaintext message is revealed to the user.
 
 ## Limitations
 
-- Maximum message size depends on image dimensions
-- Larger images can hide larger messages
-- Image quality must be preserved for successful decoding
-- LSB steganography is vulnerable to steganalysis with large payloads
+- Maximum message size depends on the image dimensions (Total Pixels × 4 channels).
+- Larger images can hide larger messages.
+- The exported image **must remain in a lossless format (PNG)**. Compressing it via JPEG or sending it through platforms that compress images (like WhatsApp or Discord, unless sent as a file) will destroy the hidden message.
 
 ## Building for Production
 
-### Backend
+To build the optimized static files:
+
 ```bash
-cd backend
 npm run build
-npm start
 ```
 
-### Frontend
-```bash
-cd frontend
-npm run build
-```
+This will output the static assets to `frontend/dist/`. Since it's a purely static client-side app, you can host the contents of `dist/` on GitHub Pages, Vercel, Netlify, Cloudflare Pages, or any static file host.
 
 ## Browser Support
 
+Requires modern browsers supporting ES modules, Web Crypto API, and modern Canvas features:
 - Chrome/Edge 90+
 - Firefox 88+
 - Safari 14+
@@ -230,33 +124,3 @@ npm run build
 ## License
 
 MIT License
-
-## Future Enhancements
-
-- [ ] Support for video steganography
-- [ ] Multiple file format support
-- [ ] Batch encoding/decoding
-- [ ] Cloud storage integration
-- [ ] Mobile app (React Native)
-- [ ] Advanced steganalysis resistance
-
-## Troubleshooting
-
-### Backend Connection Error
-- Ensure backend is running on port 5000
-- Check firewall settings
-- Verify `.env` configuration
-
-### Encoding/Decoding Failures
-- Ensure image format is PNG or JPG
-- Verify password is correct
-- Check image file size is under 10MB
-
-### Build Issues
-- Delete `node_modules` and run `npm install` again
-- Clear TypeScript cache: `rm -rf dist/`
-- Ensure Node.js version is 16+
-
----
-
-Built with ❤️ for secure communication
