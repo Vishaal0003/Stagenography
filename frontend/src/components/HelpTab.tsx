@@ -82,7 +82,7 @@ export function HelpTab() {
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-accent-orange min-w-6">2.</span>
-              <span className="text-text-muted"><strong>Upload Image:</strong> Drag and drop or click to upload a PNG/JPG image. The capacity will be shown automatically.</span>
+              <span className="text-text-muted"><strong>Upload File:</strong> Drag and drop or click to upload any file (PNG, JPG, PDF, DOC, DOCX, TXT, ZIP). The capacity will be shown automatically.</span>
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-accent-orange min-w-6">3.</span>
@@ -94,7 +94,7 @@ export function HelpTab() {
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-accent-orange min-w-6">5.</span>
-              <span className="text-text-muted"><strong>Encode & Download:</strong> Click "Encode and Download". The encoded image will be downloaded as "encoded.png"</span>
+              <span className="text-text-muted"><strong>Encode & Download:</strong> Click "Encode and Download". The encoded file will be downloaded as "encoded.png"</span>
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-accent-orange min-w-6">6.</span>
@@ -126,7 +126,7 @@ export function HelpTab() {
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-accent-orange min-w-6">2.</span>
-              <span className="text-text-muted"><strong>Upload Encoded Image:</strong> Upload the PNG image that contains the hidden message</span>
+              <span className="text-text-muted"><strong>Upload Encoded File:</strong> Upload the file that contains the hidden message</span>
             </li>
             <li className="flex gap-3">
               <span className="font-bold text-accent-orange min-w-6">3.</span>
@@ -177,7 +177,7 @@ export function HelpTab() {
 
             <div className="bg-dark-input border border-dark-border rounded-lg p-4">
               <p className="font-semibold text-accent-orange mb-2">Supported Formats</p>
-              <p className="text-text-muted text-sm">PNG, JPG for encoding • PNG for decoding</p>
+              <p className="text-text-muted text-sm">PNG, JPG, PDF, DOC, DOCX, TXT, ZIP and more for encoding & decoding</p>
             </div>
 
             <div className="bg-dark-input border border-dark-border rounded-lg p-4">

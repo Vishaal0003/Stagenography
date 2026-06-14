@@ -119,7 +119,7 @@ export function EncodeTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Upload Image</CardTitle>
+          <CardTitle>Upload File</CardTitle>
         </CardHeader>
         <CardContent>
           <FileUpload
@@ -241,6 +241,7 @@ export function EncodeTab() {
         disabled={!image || !message || !password || loading}
         className="w-full"
         size="lg"
+        variant="default"
       >
         {loading ? 'Encoding...' : 'Encode and Download'}
       </Button>

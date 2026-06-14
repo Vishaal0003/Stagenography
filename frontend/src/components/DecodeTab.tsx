@@ -89,13 +89,12 @@ export function DecodeTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Upload Encoded Image</CardTitle>
+          <CardTitle>Upload Encoded File</CardTitle>
         </CardHeader>
         <CardContent>
           <FileUpload
             onFileSelect={handleImageSelect}
             preview={preview}
-            accept=".png"
             disabled={loading}
           />
         </CardContent>
@@ -210,6 +209,7 @@ export function DecodeTab() {
         disabled={!image || !password || loading}
         className="w-full"
         size="lg"
+        variant="default"
       >
         {loading ? 'Decoding...' : 'Decode Message'}
       </Button>

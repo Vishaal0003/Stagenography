@@ -6,7 +6,8 @@
   @apply box-border;
 }
 
-html, body {
+html,
+body {
   @apply h-full bg-dark-bg text-text-dark;
 }
 
@@ -31,4 +32,3 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: #FFFFFF;
 }
-

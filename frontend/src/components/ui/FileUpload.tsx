@@ -11,7 +11,7 @@ interface FileUploadProps {
 
 export function FileUpload({
   onFileSelect,
-  accept = '.png,.jpg,.jpeg',
+  accept = '.png,.jpg,.jpeg,.pdf,.doc,.docx,.txt,.zip',
   disabled = false,
   preview = null,
 }: FileUploadProps) {
@@ -85,10 +85,10 @@ export function FileUpload({
           </div>
           <div>
             <p className="text-lg font-semibold text-text-dark">
-              Drag and drop your image
+              Drag and drop your file
             </p>
             <p className="text-sm text-text-muted">
-              or click to browse (PNG, JPG, JPEG)
+              or click to browse (PNG, JPG, PDF, DOC, DOCX, TXT, ZIP)
             </p>
           </div>
         </div>
