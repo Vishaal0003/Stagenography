@@ -1,47 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Shield, Info } from 'lucide-react';
-import { Card, CardContent } from './components/ui/Card';
+import { useState } from 'react';
+import { Shield } from 'lucide-react';
 import { Toaster } from './components/ui/Toaster';
-import { useToast } from './components/ui/ToastProvider';
 import { EncodeTab } from './components/EncodeTab';
 import { DecodeTab } from './components/DecodeTab';
 import { HelpTab } from './components/HelpTab';
-import { checkHealth } from './utils/api';
 
 type Tab = 'encode' | 'decode' | 'help';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('encode');
-  const [apiHealthy, setApiHealthy] = useState(true);
-  const [checking, setChecking] = useState(true);
-  const { addToast } = useToast();
-
-  useEffect(() => {
-    const checkApiHealth = async () => {
-      try {
-        const healthy = await checkHealth();
-        setApiHealthy(healthy);
-        if (!healthy) {
-          addToast({
-            title: 'API Connection Issue',
-            description: 'Could not connect to the backend API',
-            variant: 'destructive',
-          });
-        }
-      } catch {
-        setApiHealthy(false);
-        addToast({
-          title: 'API Connection Error',
-          description: 'Make sure the backend server is running on port 5000',
-          variant: 'destructive',
-        });
-      } finally {
-        setChecking(false);
-      }
-    };
-
-    checkApiHealth();
-  }, [addToast]);
 
   return (
     <div className="min-h-screen bg-dark-bg">
@@ -58,28 +25,9 @@ export default function App() {
               </h1>
             </div>
             <p className="text-lg text-text-muted">
-              Hide secret messages inside images with encryption
+              Hide secret messages inside images with encryption (100% Client-Side)
             </p>
           </div>
-
-          {/* API Status */}
-          {!checking && !apiHealthy && (
-            <Card className="mb-6 border-red-600/50 bg-red-900/20">
-              <CardContent className="pt-6 flex items-center gap-3">
-                <Info className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-red-400">Backend Connection Failed</p>
-                  <p className="text-sm text-red-300">
-                    Make sure the backend server is running. Run{' '}
-                    <code className="bg-red-900/50 px-2 py-1 rounded">
-                      npm run dev
-                    </code>{' '}
-                    in the backend folder.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Tab Navigation */}
           <div className="flex gap-4 mb-8 flex-wrap">
@@ -108,7 +56,7 @@ export default function App() {
           {/* Footer */}
           <div className="text-center mt-12 text-text-muted text-sm">
             <p>
-              🔒 All encryption happens securely. Your data is never stored.
+              🔒 All encryption happens securely in your browser. Your data is never stored or transmitted.
             </p>
           </div>
         </div>
