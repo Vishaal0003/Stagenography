@@ -131,6 +131,7 @@ export function EncodeTab() {
     try {
       const formData = new FormData();
       formData.append('file', encodedBlob, 'encoded.png');
+      formData.append('expire', '300'); // Delete after 5 minutes (300 seconds)
       
       const response = await fetch('https://tmpfiles.org/api/v1/upload', {
         method: 'POST',
@@ -228,11 +229,11 @@ export function EncodeTab() {
             <div className="bg-dark-input border border-dark-border rounded-lg p-6 space-y-4">
               <h3 className="font-semibold text-text-dark flex items-center gap-2">
                 <Globe className="w-5 h-5 text-accent-orange" />
-                Share Online (Avoid Compression)
+                Share Online (5-Min Expiry)
               </h3>
               <p className="text-xs text-text-muted leading-relaxed">
                 ⚠️ <strong>Avoid Chat Compression:</strong> Sharing this image directly via WhatsApp, Discord, or Telegram as a photo will compress it, which destroys the hidden message.
-                Use this temporary cloud upload to generate a direct link.
+                Use this temporary cloud upload to generate a link that **expires automatically in 5 minutes**.
               </p>
 
               {shareUrl ? (
@@ -244,7 +245,7 @@ export function EncodeTab() {
                     </Button>
                   </div>
                   <p className="text-[11px] text-green-400">
-                    ✓ Link generated! Send this link and the password to your recipient. They can paste this link directly in the Decode tab.
+                    ✓ Link generated! It will expire in 5 minutes. Send this link and the password to your recipient. They can paste this link directly in the Decode tab.
                   </p>
                 </div>
               ) : (
