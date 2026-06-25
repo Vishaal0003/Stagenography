@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/cors-proxy",
+      "destination": "/api/proxy"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

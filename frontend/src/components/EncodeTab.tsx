@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Share2, Globe, Download, CheckCircle, AlertCircle, Copy, Check } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Input } from './ui/Input';
@@ -19,6 +19,13 @@ export function EncodeTab() {
   const [loading, setLoading] = useState(false);
   const [capacity, setCapacity] = useState<number | null>(null);
   const [progress, setProgress] = useState(0);
+  
+  // Cloud sharing states
+  const [encodedBlob, setEncodedBlob] = useState<Blob | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [copiedShare, setCopiedShare] = useState(false);
+
   const downloadRef = useRef<HTMLAnchorElement>(null);
 
   const handleImageSelect = async (file: File) => {
@@ -77,6 +84,9 @@ export function EncodeTab() {
         setProgress
       );
 
+      // Keep the blob in state for sharing
+      setEncodedBlob(blob);
+
       // Create download link
       const url = URL.createObjectURL(blob);
       if (downloadRef.current) {
@@ -90,12 +100,6 @@ export function EncodeTab() {
         title: 'Success!',
         description: 'Image encoded successfully. Download started.',
       });
-
-      // Reset form
-      setImage(null);
-      setPreview(null);
-      setMessage('');
-      setPassword('');
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to encode image';
@@ -110,8 +114,176 @@ export function EncodeTab() {
     }
   };
 
+  const handleDownloadAgain = () => {
+    if (!encodedBlob) return;
+    const url = URL.createObjectURL(encodedBlob);
+    if (downloadRef.current) {
+      downloadRef.current.href = url;
+      downloadRef.current.download = 'encoded.png';
+      downloadRef.current.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleUploadToCloud = async () => {
+    if (!encodedBlob) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', encodedBlob, 'encoded.png');
+      
+      const response = await fetch('https://tmpfiles.org/api/v1/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Cloud upload failed');
+      }
+
+      const result = await response.json();
+      if (result.status === 'success' && result.data?.url) {
+        const rawUrl = result.data.url;
+        // Convert to direct download url by adding /dl/
+        const directUrl = rawUrl.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        setShareUrl(directUrl);
+        addToast({
+          title: 'Link Generated!',
+          description: 'Secure temporary sharing link created successfully.',
+        });
+      } else {
+        throw new Error(result.message || 'Invalid API response');
+      }
+    } catch (error) {
+      addToast({
+        title: 'Upload Failed',
+        description: error instanceof Error ? error.message : 'Could not upload to cloud',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCopyShareUrl = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2000);
+      addToast({
+        title: 'Copied!',
+        description: 'Link copied to clipboard. Share it along with the password.',
+      });
+    }
+  };
+
+  const handleResetForm = () => {
+    setImage(null);
+    setPreview(null);
+    setMessage('');
+    setPassword('');
+    setEncodedBlob(null);
+    setShareUrl(null);
+  };
+
   const messageLength = message.length;
   const capacityPercentage = capacity ? (messageLength / capacity) * 100 : 0;
+
+  // Render Success screen if encoding is done
+  if (encodedBlob) {
+    return (
+      <div className="space-y-6">
+        <a ref={downloadRef} className="hidden" />
+        <Card className="border-accent-orange/30 shadow-lg shadow-accent-orange/5">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-2xl text-accent-orange flex items-center justify-center gap-2">
+              <CheckCircle className="w-8 h-8 text-green-500" />
+              Encoding Successful!
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-4">
+            <p className="text-center text-text-muted text-sm max-w-md mx-auto">
+              Your secret message has been securely encrypted and hidden inside the image. The file has been saved to your downloads.
+            </p>
+
+            {/* Preview of the encoded image */}
+            {preview && (
+              <div className="flex justify-center">
+                <div className="relative group rounded-lg overflow-hidden border border-dark-border max-w-xs">
+                  <img src={preview} alt="Encoded Preview" className="max-h-48 object-contain" />
+                  <div className="absolute inset-0 bg-dark-bg/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                    <button
+                      onClick={handleDownloadAgain}
+                      className="p-3 bg-accent-orange text-dark-bg rounded-full hover:scale-105 transition-transform shadow-lg"
+                      title="Download Image Again"
+                    >
+                      <Download className="w-6 h-6" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Cloud Sharing Options */}
+            <div className="bg-dark-input border border-dark-border rounded-lg p-6 space-y-4">
+              <h3 className="font-semibold text-text-dark flex items-center gap-2">
+                <Globe className="w-5 h-5 text-accent-orange" />
+                Share Online (Avoid Compression)
+              </h3>
+              <p className="text-xs text-text-muted leading-relaxed">
+                ⚠️ <strong>Avoid Chat Compression:</strong> Sharing this image directly via WhatsApp, Discord, or Telegram as a photo will compress it, which destroys the hidden message.
+                Use this temporary cloud upload to generate a direct link.
+              </p>
+
+              {shareUrl ? (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input readOnly value={shareUrl} className="font-mono text-xs bg-dark-card border-accent-orange/20" />
+                    <Button onClick={handleCopyShareUrl} className="px-4">
+                      {copiedShare ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-green-400">
+                    ✓ Link generated! Send this link and the password to your recipient. They can paste this link directly in the Decode tab.
+                  </p>
+                </div>
+              ) : (
+                <Button onClick={handleUploadToCloud} disabled={uploading} className="w-full gap-2" variant="outline">
+                  {uploading ? (
+                    <>
+                      <LoadingSpinner />
+                      Uploading to Cloud...
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="w-4 h-4" />
+                      Upload to Cloud & Get Share Link
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {/* WhatsApp Document Share Warning */}
+            <div className="bg-dark-card border border-dark-border rounded-lg p-4 text-xs text-text-muted space-y-2">
+              <span className="font-medium text-text-dark flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-accent-orange" />
+                Sharing manually?
+              </span>
+              <p>
+                If you prefer sending the image file directly, make sure to send it as a <strong>Document / File</strong>.
+                For example, on WhatsApp, click the attachment icon, choose <strong>Document</strong>, and select the downloaded PNG file.
+              </p>
+            </div>
+
+            <Button onClick={handleResetForm} className="w-full">
+              Encode Another Image
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

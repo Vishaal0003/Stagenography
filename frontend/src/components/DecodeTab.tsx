@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Copy, Check } from 'lucide-react';
+import { Eye, EyeOff, Copy, Check, Link, Upload } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Input } from './ui/Input';
@@ -19,12 +19,59 @@ export function DecodeTab() {
   const [copied, setCopied] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // New Decode Source States
+  const [decodeSource, setDecodeSource] = useState<'file' | 'link'>('file');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [fetchingLink, setFetchingLink] = useState(false);
+
   const handleImageSelect = (file: File) => {
     setImage(file);
     const reader = new FileReader();
     reader.onload = (e) => setPreview(e.target?.result as string);
     reader.readAsDataURL(file);
     setMessage(null);
+  };
+
+  const handleFetchLink = async () => {
+    if (!linkUrl) return;
+    setFetchingLink(true);
+    try {
+      let targetUrl = linkUrl.trim();
+      // Auto-correct tmpfiles.org URLs to their direct download variants
+      if (targetUrl.includes('tmpfiles.org/') && !targetUrl.includes('tmpfiles.org/dl/')) {
+        targetUrl = targetUrl.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+      }
+
+      // Use our custom CORS proxy (works in both local development and Vercel production)
+      const proxyUrl = `/cors-proxy?url=${encodeURIComponent(targetUrl)}`;
+      
+      const response = await fetch(proxyUrl);
+      if (!response.ok) {
+        throw new Error('Failed to download image from link. Make sure the link is correct and active.');
+      }
+      
+      const blob = await response.blob();
+      const file = new File([blob], 'encoded.png', { type: 'image/png' });
+      
+      setImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+      setMessage(null);
+      
+      addToast({
+        title: 'Success!',
+        description: 'Shared image loaded successfully.',
+      });
+    } catch (error) {
+      addToast({
+        title: 'Load Failed',
+        description: error instanceof Error ? error.message : 'Could not fetch image from URL. Try downloading the image manually first.',
+        variant: 'destructive',
+      });
+    } finally {
+      setFetchingLink(false);
+    }
   };
 
   const handleDecode = async () => {
@@ -88,15 +135,88 @@ export function DecodeTab() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Upload Encoded File</CardTitle>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <CardTitle>Select Encoded Image</CardTitle>
+            <div className="flex bg-dark-input p-1 rounded-lg border border-dark-border text-xs">
+              <button
+                type="button"
+                onClick={() => setDecodeSource('file')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-md transition-all ${
+                  decodeSource === 'file'
+                    ? 'bg-accent-orange text-dark-bg font-semibold'
+                    : 'text-text-muted hover:text-text-dark'
+                }`}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                Upload File
+              </button>
+              <button
+                type="button"
+                onClick={() => setDecodeSource('link')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-md transition-all ${
+                  decodeSource === 'link'
+                    ? 'bg-accent-orange text-dark-bg font-semibold'
+                    : 'text-text-muted hover:text-text-dark'
+                }`}
+              >
+                <Link className="w-3.5 h-3.5" />
+                Paste Link
+              </button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <FileUpload
-            onFileSelect={handleImageSelect}
-            preview={preview}
-            disabled={loading}
-          />
+          {decodeSource === 'file' ? (
+            <FileUpload
+              onFileSelect={handleImageSelect}
+              preview={preview}
+              disabled={loading}
+            />
+          ) : (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Paste direct link (e.g. tmpfiles.org/dl/...)"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  disabled={loading || fetchingLink}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={handleFetchLink}
+                  disabled={!linkUrl || loading || fetchingLink}
+                  variant="outline"
+                  className="min-w-24 gap-1"
+                >
+                  {fetchingLink ? (
+                    <>
+                      <LoadingSpinner />
+                      Loading...
+                    </>
+                  ) : (
+                    'Load Link'
+                  )}
+                </Button>
+              </div>
+              
+              {preview ? (
+                <div className="space-y-2">
+                  <img
+                    src={preview}
+                    alt="Loaded Preview"
+                    className="max-w-full max-h-64 mx-auto rounded-lg border border-dark-border"
+                  />
+                  <p className="text-center text-xs text-green-400">✓ Loaded successfully</p>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-text-muted text-xs border border-dashed border-dark-border rounded-lg">
+                  Paste the temporary cloud link shared by the sender to load the image directly.
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -171,7 +291,7 @@ export function DecodeTab() {
       )}
 
       {message && (
-        <Card className="bg-dark-card border-dark-border">
+        <Card className="bg-dark-card border-dark-border animate-fade-in">
           <CardHeader>
             <CardTitle className="text-accent-orange">Decoded Message</CardTitle>
           </CardHeader>
@@ -189,7 +309,7 @@ export function DecodeTab() {
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4" />
+                    <Check className="w-4 h-4 text-green-500" />
                     Copied!
                   </>
                 ) : (
